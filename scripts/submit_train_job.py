@@ -6,7 +6,6 @@ from azure.ai.ml.entities import Model, ManagedOnlineEndpoint, ManagedOnlineDepl
 from azure.ai.ml.constants import AssetTypes
 from azure.core.exceptions import ResourceExistsError
 
-import os
 from dotenv import load_dotenv
 import config.env as env
 

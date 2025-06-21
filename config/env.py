@@ -9,12 +9,12 @@ def get_env_variable(var_name: str, default_value: str = None) -> str:
 AZURE_SUBSCRIPTION_ID="7cc0da73-46c1-4826-a73b-d7e49a39d6c1"
 AZURE_RESOURCE_GROUP="rg-blog-gen"
 AZURE_STORAGE_ACCOUNT="bloggensa"
-AZURE_STORAGE_CONNECTION_STRING=os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-HF_TOKEN=os.getenv("HF_TOKEN")
+AZURE_STORAGE_CONNECTION_STRING=get_env_variable("AZURE_STORAGE_CONNECTION_STRING")
+HF_TOKEN=get_env_variable("HF_TOKEN")
 BLOB_CONTAINER_NAME="bloggen"
 
-COSMOS_ENDPOINT = os.getenv("COSMOS_DB_ENDPOINT")
-COSMOS_KEY = os.getenv("COSMOS_DB_KEY")
+COSMOS_ENDPOINT = get_env_variable("COSMOS_DB_ENDPOINT")
+COSMOS_KEY = get_env_variable("COSMOS_DB_KEY")
 DATABASE_NAME = "AIWriterDB"
 CONTAINER_NAME = "Posts"
-MODEL_NAME = os.getenv("MODEL_NAME", "mistralai/Mistral-7B-v0.1")
+MODEL_NAME = get_env_variable("MODEL_NAME", "mistralai/Mistral-7B-v0.1")
