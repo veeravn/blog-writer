@@ -1,4 +1,5 @@
 import json
+import config.env as env
 import os
 from azure.storage.blob import BlobServiceClient
 from dotenv import load_dotenv
@@ -44,7 +45,7 @@ def save_jsonl(data, path):
     print(f"Saved new fine-tune dataset to {path}")
 
 def upload_to_blob(local_path, container_name, blob_path):
-    connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+    connection_string = env.AZURE_STORAGE_CONNECTION_STRING
     if not connection_string:
         raise ValueError("Missing AZURE_STORAGE_CONNECTION_STRING in .env")
 

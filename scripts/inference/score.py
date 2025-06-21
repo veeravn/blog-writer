@@ -1,8 +1,7 @@
 # scripts/inference/score.py
 
-import os
-import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
+from config.env import MODEL_NAME
 
 model = None
 tokenizer = None
@@ -10,8 +9,8 @@ tokenizer = None
 def init():
     global model, tokenizer
     from transformers import AutoModelForCausalLM, AutoTokenizer
-    model = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-v0.1")
-    tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-v0.1")
+    model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
 def run(input_data):
     prompt = input_data.get("prompt", "")

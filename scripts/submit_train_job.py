@@ -8,11 +8,12 @@ from azure.core.exceptions import ResourceExistsError
 
 import os
 from dotenv import load_dotenv
+import config.env as env
 
 load_dotenv()
 
-hf_token = os.getenv("HF_TOKEN")
-if not hf_token:
+
+if not env.HF_TOKEN:
     raise ValueError("HF_TOKEN environment variable is not set. Please set it to your Hugging Face token.")
 
 subscription_id = "7cc0da73-46c1-4826-a73b-d7e49a39d6c1"
@@ -47,14 +48,16 @@ def submit_azureml_job():
         compute=compute_cluster,
         display_name="train-mistral-lora",
         experiment_name="bloggen-mistral-finetune",
-        environment_variables={"HF_TOKEN": hf_token}
+        environment_variables={"HF_TOKEN": env.HF_TOKEN}
     )
 
     job = ml_client.jobs.create_or_update(job)
     print("✅ Azure ML training job submitted.")
     ml_client.jobs.stream(job.name)
 
-    completed_job = ml_client.jobs.get("ashy_room_wp5lw6wxz4")
+    completed_job = ml_client.jobs.create_or_update(job)
+    ml_client.jobs.stream(completed_job.name)
+    
     model_output_path = f"azureml://jobs/{completed_job.name}/outputs/model_output"
     registered_model = ml_client.models.get(
         Model(

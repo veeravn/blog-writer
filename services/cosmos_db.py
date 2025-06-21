@@ -4,21 +4,19 @@ import logging
 from azure.cosmos import CosmosClient, PartitionKey
 from datetime import datetime
 from dotenv import load_dotenv
+import config.env as env
 
 load_dotenv()
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-COSMOS_ENDPOINT = os.getenv("COSMOS_DB_ENDPOINT")
-COSMOS_KEY = os.getenv("COSMOS_DB_KEY")
-DATABASE_NAME = "AIWriterDB"
-CONTAINER_NAME = "Posts"
 
-client = CosmosClient(COSMOS_ENDPOINT, COSMOS_KEY)
-database = client.create_database_if_not_exists(id=DATABASE_NAME)
+
+client = CosmosClient(env.COSMOS_ENDPOINT, env.COSMOS_KEY)
+database = client.create_database_if_not_exists(id=env.DATABASE_NAME)
 container = database.create_container_if_not_exists(
-    id=CONTAINER_NAME,
+    id=env.CONTAINER_NAME,
     partition_key=PartitionKey(path="/user_id"),
     offer_throughput=400
 )
@@ -68,7 +66,7 @@ def get_tone_preference(user_id: str) -> str:
         logger.warning(f"No tone preference found for user {user_id}: {e}")
         return "neutral"
 def save_revision_log(log_data: dict):
-    container = client.get_container_client(CONTAINER_NAME)
+    container = client.get_container_client(env.CONTAINER_NAME)
     log_data["id"] = str(uuid.uuid4())  # Ensure unique ID
     log_data["type"] = "revision_log"
     log_data["timestamp"] = datetime.now(datetime.timezone.utc).isoformat()

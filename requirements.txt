@@ -22,3 +22,4 @@ beautifulsoup4
 protobuf
 requests
 numpy<2.0.0
+openai
