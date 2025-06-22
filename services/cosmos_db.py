@@ -12,8 +12,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-
-client = CosmosClient(env.COSMOS_ENDPOINT, env.COSMOS_KEY)
+client = CosmosClient.from_connection_string(env.COSMOS_CONNECTION_STRING)
 database = client.create_database_if_not_exists(id=env.DATABASE_NAME)
 container = database.create_container_if_not_exists(
     id=env.CONTAINER_NAME,
