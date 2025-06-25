@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     wget curl git ca-certificates build-essential \
     libglib2.0-0 libxext6 libsm6 libxrender1 libssl-dev \
     libsndfile1 libbz2-dev liblzma-dev libffi-dev \
-    libgl1 libgl1-mesa-glx tini \
+    libgl1 libgl1-mesa-glx tini runit \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Miniconda
