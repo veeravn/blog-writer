@@ -14,11 +14,17 @@ AZURE_STORAGE_ACCOUNT="bloggensa"
 AZURE_STORAGE_CONNECTION_STRING=get_env_variable("AZURE_STORAGE_CONNECTION_STRING")
 HF_TOKEN=get_env_variable("HF_TOKEN")
 BLOB_CONTAINER_NAME="bloggen"
+WORKSPACE_NAME = "bloggen-ml"
+COMPUTE_CLUSTER = "bloggen-compute"
+ENVIRONMENT_NAME = "mistral-env"
+ENVIRONMENT_VERSION = "13"
 
 COSMOS_CONNECTION_STRING = get_env_variable("COSMOS_CONNECTION_STRING")
 DATABASE_NAME = "AIWriterDB"
 CONTAINER_NAME = "Posts"
 MODEL_NAME = get_env_variable("MODEL_NAME", "mistralai/Mistral-7B-v0.1")
+TRAINING_COMMAND = "python train_lora.py --dataset ${{inputs.dataset}} --output_dir ${{outputs.model_output}}"
+INSTRUCTION_DATASET_URI = f"azureml://subscriptions/{AZURE_SUBSCRIPTION_ID}/resourcegroups/{AZURE_RESOURCE_GROUP}/workspaces/{WORKSPACE_NAME}/datastores/workspaceblobstore/paths/instruction_dataset.jsonl"
 
 if not COSMOS_CONNECTION_STRING:
     raise ValueError("Missing Cosmos DB credentials in environment variables.")
@@ -26,11 +32,6 @@ if not AZURE_STORAGE_CONNECTION_STRING:
     raise ValueError("Missing Azure Storage credentials in environment variables.")
 if not HF_TOKEN:
     raise ValueError("Missing Hugging Face token in environment variables.")
-
-WORKSPACE_NAME = "bloggen-ml"
-COMPUTE_CLUSTER = "bloggen-compute"
-ENVIRONMENT_NAME = "mistral-env"
-ENVIRONMENT_VERSION = "13"
 
 ml_client = MLClient(
     credential=DefaultAzureCredential(),

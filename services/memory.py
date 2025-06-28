@@ -1,5 +1,5 @@
 import tempfile
-import os
+import os, uuid
 from datetime import datetime
 from typing import List, Dict
 from .cosmos_db import save_prompt_history, fetch_user_preferences

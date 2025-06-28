@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
-openai.api_base = os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1")
 openai.api_type = os.getenv("OPENAI_API_TYPE", "openai")
 openai.api_version = os.getenv("OPENAI_API_VERSION", None)
 

@@ -1,2 +1,7 @@
-# score.py
-from main import app  # Assumes your FastAPI app is in main.py
+from main import app
+
+def init():
+    return
+
+def run(inputs):
+    return {"status": "ok"}

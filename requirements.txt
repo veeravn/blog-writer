@@ -17,6 +17,7 @@ azure-ai-ml >= 1.13.0
 azure-cosmos
 azure-storage-blob
 python-dotenv
+python-multipart
 tqdm
 beautifulsoup4
 protobuf
