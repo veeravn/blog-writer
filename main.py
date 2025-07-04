@@ -29,7 +29,3 @@ app.include_router(upload_router, prefix="/upload")
 app.include_router(revise_router, prefix="/revise")
 app.include_router(history_router, prefix="/history")
 app.include_router(data_router, prefix="/data")
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=5001, reload=False)

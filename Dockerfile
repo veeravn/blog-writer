@@ -1,20 +1,35 @@
-# Use the latest curated PyTorch + CUDA + Python 3.9 AzureML image
-FROM mcr.microsoft.com/azureml/openmpi4.1.0-cuda11.8-cudnn8-ubuntu22.04
+# Use an official Ubuntu base image
+FROM ubuntu:22.04
 
-RUN apt-get update && apt-get install -y python3 python3-pip git
+# Prevent interactive prompts during build
+ENV DEBIAN_FRONTEND=noninteractive
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python and system dependencies
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY . /app
+# Set working directory
 WORKDIR /app
 
-# Make start.sh executable
+# Copy requirements first to leverage Docker cache
+COPY requirements.txt .
+
+# Install Python packages
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Make the startup script executable
 RUN chmod +x start.sh
 
-ENV PYTHONPATH=.
+# Expose FastAPI port
+EXPOSE 8000
 
-EXPOSE 5001
-
-# Entrypoint: Train if flag is set, otherwise start FastAPI
-CMD ["bash", "start.sh"]
+# Start the app
+CMD ["./start.sh"]

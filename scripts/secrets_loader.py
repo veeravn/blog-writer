@@ -11,7 +11,8 @@ def get_env_vars(vault_name: str, secret_names: list[str]) -> dict:
     env_vars = {}
     for secret in secret_names:
         try:
-            env_vars[secret] = client.get_secret(secret).value
+            secret_name = secret.upper().replace("-", "_")
+            env_vars[secret_name] = client.get_secret(secret).value
         except Exception as e:
             print(f"⚠️ Failed to retrieve {secret}: {e}")
     return env_vars

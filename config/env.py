@@ -16,9 +16,10 @@ HF_TOKEN=get_env_variable("HF_TOKEN")
 BLOB_CONTAINER_NAME="bloggen"
 WORKSPACE_NAME = "bloggen-ml"
 COMPUTE_CLUSTER = "bloggen-compute"
-ENVIRONMENT_NAME = "mistral-env"
-ENVIRONMENT_VERSION = "15"
-MODEL_VERSION = "26"
+ENVIRONMENT_NAME = "partha-style-env"
+ENVIRONMENT_VERSION = "2"
+MODEL_VERSION = "2"
+FT_MODEL_NAME="partha-style-model"
 
 COSMOS_CONNECTION_STRING = get_env_variable("COSMOS_CONNECTION_STRING")
 DATABASE_NAME = "AIWriterDB"

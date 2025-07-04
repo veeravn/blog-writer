@@ -122,10 +122,26 @@ def main():
     last_checkpoint = get_last_checkpoint(OUTPUT_DIR)
     trainer.train(resume_from_checkpoint=last_checkpoint)
 
-    # Save model
-    print(f"\n📂 Saving model to: {OUTPUT_DIR}")
+    # Save original LoRA model (optional for debugging)
+    print(f"\n📂 Saving original LoRA model to: {OUTPUT_DIR}")
     trainer.save_model(OUTPUT_DIR)
     tokenizer.save_pretrained(OUTPUT_DIR)
+
+    # Merge base + LoRA weights and save merged model
+    print("\n🔁 Merging base model with LoRA adapters...")
+    merged_model = model.merge_and_unload()
+
+    MERGED_DIR = os.path.join(OUTPUT_DIR, "merged_model")
+    os.makedirs(MERGED_DIR, exist_ok=True)
+
+    print(f"💾 Saving merged model to: {MERGED_DIR}")
+    merged_model.save_pretrained(MERGED_DIR)
+    tokenizer.save_pretrained(MERGED_DIR)
+
+    from pathlib import Path
+    print("\n📄 Merged model directory contents:")
+    for path in Path(MERGED_DIR).glob("*"):
+        print("-", path.name)
 
     from pathlib import Path    
     print("📄 Output dir contents:")

@@ -38,13 +38,13 @@ def submit_azureml_job():
     print("✅ Azure ML training job submitted.")
     env.ml_client.jobs.stream(completed_job.name)
 
-    model_output_path = f"azureml://jobs/{completed_job.name}/outputs/model_output"
+    model_output_path = f"azureml://jobs/{completed_job.name}/outputs/model_output/merged_model"
     registered_model = env.ml_client.models.create_or_update(
         Model(
-            name="partha-style-mistral",
+            name=env.FT_MODEL_NAME,
             path=model_output_path,
             type="custom_model",
-            description="LoRA fine-tuned Mistral-7B on Partha Naidu's writing style"
+            description="Merged Mistral-7B fine-tuned on Partha Naidu's writing style (LoRA + base)",
         )
     )
 

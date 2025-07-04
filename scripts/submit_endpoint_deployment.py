@@ -2,7 +2,8 @@ from azure.ai.ml.entities import ManagedOnlineEndpoint, ManagedOnlineDeployment,
 from azure.core.exceptions import ResourceExistsError
 
 from dotenv import load_dotenv
-from config.env import ml_client, ENVIRONMENT_NAME, ENVIRONMENT_VERSION, MODEL_VERSION
+from config.env import ml_client, ENVIRONMENT_NAME, ENVIRONMENT_VERSION, MODEL_VERSION, FT_MODEL_NAME
+from scripts.secrets_loader import get_env_vars
 
 load_dotenv()
 
@@ -10,30 +11,15 @@ def submit_mlendpoint_job():
     azureml_env = ml_client.environments.get(ENVIRONMENT_NAME, version=ENVIRONMENT_VERSION)
 
     # Create the online endpoint
-    endpoint_name = "mistral-blog-endpoint"
-    
+    endpoint_name = "partha-style-endpoint"
+
     registered_model = ml_client.models.get(
-        name="partha-style-mistral",
+        name=FT_MODEL_NAME,
         version=MODEL_VERSION  # Ensure this matches the version you registered
     )
 
-    endpoint = ManagedOnlineEndpoint(
-        name=endpoint_name,
-        description="Blog generation endpoint using LoRA-tuned Mistral",
-        auth_mode="key",  #
-    )
-
-    try:
-        ml_client.online_endpoints.begin_create_or_update(endpoint).wait()
-        print(f"✅ Created endpoint '{endpoint.name}'")
-    except ResourceExistsError:
-        print("ℹ️ Endpoint already exists. Proceeding with deployment update.")
-    except Exception as e:
-        print(f"❌ Failed to create or locate endpoint: {e}")
-        raise
-
     # Create the deployment
-    deployment_name = "partha-style-mistral"
+    deployment_name = FT_MODEL_NAME
     env_vars = get_env_vars(
         vault_name="bloggenml4401779802",
         secret_names=[
@@ -46,11 +32,7 @@ def submit_mlendpoint_job():
             "CONTAINER-NAME",
             "DATABASE-NAME",
             "HF-TOKEN",
-            "MODEL-NAME",
-            "OPENAI-API-BASE",
-            "OPENAI-API-KEY",
-            "OPENAI-API-TYPE",
-            "OPENAI-API-VERSION"
+            "MODEL-NAME"
         ]
     )
     
@@ -59,27 +41,34 @@ def submit_mlendpoint_job():
         endpoint_name=endpoint_name,
         model=registered_model,
         environment=azureml_env,
+        environment_variables=env_vars,
         code_configuration=CodeConfiguration(
-            code="./",
-            scoring_script="main.py"  # dummy script to satisfy Azure's deploy check
+            code="./",   # or "./" if main.py is in root
+            scoring_script="score.py"
         ),
         instance_type="Standard_NC6s_v3",
         instance_count=1,
-        environment_variables=env_vars,
+        # environment_variables=env_vars,
         request_settings=OnlineRequestSettings(
             request_timeout_ms=120000,
             max_concurrent_requests_per_instance=1
-        )
+        ),
     )
 
     print("Deployment args:", vars(deployment))
     print(f"🚀 Deploying model {registered_model.name} to endpoint '{endpoint_name}'...")
     ml_client.online_deployments.begin_create_or_update(deployment).wait()
 
+    endpoint = ManagedOnlineEndpoint(
+        name=endpoint_name,
+        description="Blog Writer model endpoint using LoRA-tuned Mistral",
+        auth_mode="key",
+        tags={"project": "blog-writer"},
+        traffic={"blue": 100}
+    )
     # Route all traffic to new deployment
-    ml_client.online_endpoints.begin_update(
-        endpoint_name=endpoint_name,
-        traffic={deployment_name: 100}
+    ml_client.online_endpoints.begin_create_or_update(
+        endpoint=endpoint
     ).wait()
 
     print(f"✅ Model deployed to '{endpoint_name}' using deployment '{deployment_name}'")
