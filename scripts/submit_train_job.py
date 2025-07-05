@@ -18,11 +18,11 @@ def submit_azureml_job():
     # Create the training job
     job = command(
         code="./scripts",  # directory with train_lora.py
-        command="python train_lora.py --dataset ${{inputs.dataset}} --output_dir ${{outputs.model_output}}",
+        command=env.TRAINING_COMMAND,
         environment=azureml_env,
         inputs={
             "dataset": Input(
-                path="azureml://subscriptions/7cc0da73-46c1-4826-a73b-d7e49a39d6c1/resourcegroups/rg-blog-gen/workspaces/bloggen-ml/datastores/workspaceblobstore/paths/instruction_dataset.jsonl",
+                path=env.INSTRUCTION_DATASET_URI,
                 type=AssetTypes.URI_FILE,
             )
         },
@@ -34,18 +34,17 @@ def submit_azureml_job():
         experiment_name="bloggen-mistral-finetune",
         environment_variables={"HF_TOKEN": env.HF_TOKEN}
     )
-
     completed_job = env.ml_client.jobs.create_or_update(job)
     print("✅ Azure ML training job submitted.")
     env.ml_client.jobs.stream(completed_job.name)
 
-    model_output_path = f"azureml://jobs/{completed_job.name}/outputs/model_output"
+    model_output_path = f"azureml://jobs/{completed_job.name}/outputs/model_output/merged_model"
     registered_model = env.ml_client.models.create_or_update(
         Model(
-            name="partha-style-mistral",
+            name=env.FT_MODEL_NAME,
             path=model_output_path,
             type="custom_model",
-            description="LoRA fine-tuned Mistral-7B on Partha Naidu's writing style"
+            description="Merged Mistral-7B fine-tuned on Partha Naidu's writing style (LoRA + base)",
         )
     )
 

@@ -1,11 +1,12 @@
 #!/bin/bash
 
-cd /app
-echo "Starting the FastAPI application..."
-echo "Setting PYTHONPATH to current directory..."
-export PYTHONPATH=$(pwd)
-echo "Python version: $(python --version)"
-echo "Checking main.py module..."
-python -m py_compile main.py || { echo "main.py has syntax errors"; exit 1; }
+echo "🚀 Starting FastAPI app..."
 
-exec python -m main
+# Optional: Load environment variables
+if [ -f ".env" ]; then
+    echo "🔑 Loading .env file"
+    export $(grep -v '^#' .env | xargs)
+fi
+
+# Start the app
+uvicorn main:app --host 0.0.0.0 --port 8000

@@ -15,7 +15,9 @@ python-docx
 azure-identity
 azure-ai-ml >= 1.13.0
 azure-cosmos
+azure-keyvault-secrets
 azure-storage-blob
+azureml-inference-server-http
 python-dotenv
 python-multipart
 tqdm
