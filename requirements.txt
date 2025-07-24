@@ -13,6 +13,7 @@ uvicorn[standard]==0.29.0
 pydantic
 python-docx
 azure-identity
+azure-functions
 azure-ai-ml >= 1.13.0
 azure-cosmos
 azure-keyvault-secrets
