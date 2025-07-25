@@ -1,4 +1,4 @@
-import logging, openai, time, os
+import logging
 from dotenv import load_dotenv
 from .model import generate_with_model
 
