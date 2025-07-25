@@ -10,5 +10,7 @@ start.sh
 scripts/
 notebooks/
 tests/
-
 .venv
+local.settings.json
+*.pyo
+*.pyd
