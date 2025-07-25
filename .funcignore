@@ -1,0 +1,12 @@
+*.pyc
+__pycache__/
+.env
+.vscode/
+.git/
+*.log
+*.md
+Dockerfile
+start.sh
+scripts/
+notebooks/
+tests/
