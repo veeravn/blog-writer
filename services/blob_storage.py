@@ -1,5 +1,4 @@
 # services/blob_storage.pyimport json
-from tempfile import NamedTemporaryFile
 from azure.storage.blob import BlobServiceClient, ContentSettings
 import config.env as env
 import json

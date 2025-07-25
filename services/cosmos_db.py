@@ -1,13 +1,9 @@
-import os
 import uuid
 import logging
 from azure.cosmos import CosmosClient, PartitionKey
 from datetime import datetime
-from dotenv import load_dotenv
 import config.env as env
 from typing import List
-
-load_dotenv()
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
