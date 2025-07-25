@@ -1,50 +1,39 @@
 import azure.functions as func
-import json, logging, uuid
-from datetime import datetime
+import json
+import logging
 
 from services.openai_client import generate_blog_post
-from services.memory import store_prompt_context, get_user_tone_preferences
 from services.cosmos_db import save_post
+from services.blob_storage import load_preferences_from_blob
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
-@app.function_name(name="blog_post_handler")
+@app.function_name(name="blog_post")
 @app.route(route="blog-post", methods=["POST"])
-def blog_post_handler(req: func.HttpRequest) -> func.HttpResponse:
+def blog_post(req: func.HttpRequest) -> func.HttpResponse:
     try:
-        body = req.get_json()
+        data = req.get_json()
+        prompt = data.get("prompt")
+        style = data.get("style")
+        user_id = data.get("user_id")
 
-        user_id = body.get("user_id")
-        prompt = body.get("prompt")
-        style = body.get("style")
-        preferences = body.get("preferences")
-        save = body.get("save", False)
+        if not prompt or not user_id:
+            return func.HttpResponse("Missing required fields: 'prompt' and 'user_id'", status_code=400)
 
-        # Generate blog post using OpenAI client
-        content = generate_blog_post(prompt, style=style, preferences=preferences)
+        # Load preferences from blob
+        preferences = load_preferences_from_blob(user_id)
 
-        if save:
-            version = 1
-            post_id = str(uuid.uuid4())
-            timestamp = datetime.utcnow().isoformat()
+        # Generate blog post using preferences or style
+        content = generate_blog_post(prompt=prompt, style=style, preferences=preferences)
 
-            post_record = {
-                "id": post_id,
-                "user_id": user_id,
-                "prompt": prompt,
-                "content": content,
-                "version": version,
-                "timestamp": timestamp
-            }
+        # Save the post
+        post_id = save_post(user_id=user_id, prompt=prompt, content=content)
 
-            save_post(post_record)
-            store_prompt_context(user_id, prompt, preferences or {})
-
-            return func.HttpResponse(json.dumps(post_record), mimetype="application/json", status_code=201)
-
-        # Just return generated content without saving
-        return func.HttpResponse(json.dumps({"content": content}), mimetype="application/json", status_code=200)
-
+        return func.HttpResponse(
+            json.dumps({"post_id": post_id, "content": content}),
+            mimetype="application/json",
+            status_code=200
+        )
     except Exception as e:
-        logging.exception("Error in blog_post_handler")
+        logging.exception("Failed to generate blog post")
         return func.HttpResponse(f"Error: {str(e)}", status_code=500)

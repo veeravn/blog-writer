@@ -1,46 +1,44 @@
-# azure_functions_app/revise/__init__.py
 import azure.functions as func
 import json
+import logging
+
 from services.openai_client import revise_blog_post
-from services.memory import get_user_tone_preferences
-from services.cosmos_db import save_revision_log
+from services.versioning import save_revision
+from services.blob_storage import load_preferences_from_blob
 
-async def main(req: func.HttpRequest) -> func.HttpResponse:
+app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
+
+@app.function_name(name="revise_post")
+@app.route(route="revise-post", methods=["POST"])
+def revise_post(req: func.HttpRequest) -> func.HttpResponse:
     try:
-        req_body = req.get_json()
-        original = req_body.get("original_prompt")
-        initial_output = req_body.get("initial_output")
-        feedback = req_body.get("feedback")
-        user_id = req_body.get("user_id", "default_user")
+        data = req.get_json()
+        post_id = data.get("post_id")
+        original = data.get("original")
+        feedback = data.get("feedback")
+        user_id = data.get("user_id")
 
-        if not original or not feedback:
-            return func.HttpResponse(
-                json.dumps({"error": "Both 'original' and 'feedback' fields are required."}),
-                status_code=400,
-                mimetype="application/json"
-            )
+        if not all([post_id, original, feedback, user_id]):
+            return func.HttpResponse("Missing one or more required fields: post_id, original, feedback, user_id", status_code=400)
 
-        preferences = get_user_tone_preferences(user_id)
-        revised_post = revise_blog_post(initial_output, feedback, preferences)
+        # Load user preferences from blob
+        preferences = load_preferences_from_blob(user_id)
 
-        # Log the revision
-        save_revision_log({
-            "original_prompt": original,
-            "initial_output": initial_output,
-            "user_feedback": feedback,
-            "final_output": revised_post,
-            "user_id": user_id
-        })
+        # Generate revised content
+        revised = revise_blog_post(original=original, feedback=feedback, preferences=preferences)
+
+        # Save new revision
+        new_version_id = save_revision(post_id, revised, feedback)
 
         return func.HttpResponse(
-            json.dumps({"revised": revised_post}),
-            status_code=200,
-            mimetype="application/json"
+            json.dumps({
+                "revised_content": revised,
+                "new_version_id": new_version_id
+            }),
+            mimetype="application/json",
+            status_code=200
         )
 
     except Exception as e:
-        return func.HttpResponse(
-            json.dumps({"error": str(e)}),
-            status_code=500,
-            mimetype="application/json"
-        )
+        logging.exception("Failed to revise post")
+        return func.HttpResponse(f"Error: {str(e)}", status_code=500)
