@@ -1,10 +1,5 @@
 import logging
-import os
 from .model import generate_with_model
-
-if os.getenv("AZURE_FUNCTIONS_ENVIRONMENT") != "Production":
-    from dotenv import load_dotenv
-    load_dotenv()
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
