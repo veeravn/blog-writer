@@ -15,5 +15,5 @@ azure-storage-blob
 python-dotenv
 python-multipart
 beautifulsoup4
-requests
+requests>=2.0.0
 openai
