@@ -3,7 +3,7 @@ import json
 import logging
 
 from services.openai_client import revise_blog_post
-from services.versioning import save_revision
+from services.versioning import revise_post_version
 from services.blob_storage import load_preferences_from_blob
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
@@ -24,7 +24,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         revised = revise_blog_post(original=original, feedback=feedback, preferences=preferences)
 
         # Save new revision
-        new_version_id = save_revision(post_id, revised, feedback)
+        new_version_id = revise_post_version(post_id, revised, feedback)
 
         return func.HttpResponse(
             json.dumps({

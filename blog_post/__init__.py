@@ -21,12 +21,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
         # Generate blog post using preferences or style
         content = generate_blog_post(prompt=prompt, style=style, preferences=preferences)
+        logging.info(f"Generated content for user {user_id}: {content}")
 
         # Save the post
         post_id = save_post(user_id=user_id, prompt=prompt, content=content)
-
+        response_data = {"post_id": post_id, "content": content}
         return func.HttpResponse(
-            json.dumps({"post_id": post_id, "content": content}),
+            json.dumps(response_data),
             mimetype="application/json",
             status_code=200
         )

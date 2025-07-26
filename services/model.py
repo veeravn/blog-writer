@@ -1,5 +1,9 @@
 # services/model.py
 import os, requests
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Read the endpoint and key from env variables or fallback
 AZURE_ML_ENDPOINT = os.getenv("AZURE_ML_ENDPOINT", "https://partha-style-endpoint.eastus.inference.ml.azure.com/score")
@@ -24,12 +28,27 @@ def generate_with_model(prompt: str, temperature: float = 0.7, max_tokens: int =
     try:
         response = requests.post(AZURE_ML_ENDPOINT, headers=headers, json=payload)
         response.raise_for_status()
-        output = response.text.strip()
+        # Attempt to parse JSON
+        try:
+            resp_json = response.json()
+            # Azure ML may return {"output": "..."} or {"outputs": "..."}
+            if "output" in resp_json:
+                output = resp_json["output"]
+            elif "outputs" in resp_json:
+                output = resp_json["outputs"]
+            else:
+                # Fallback: just dump the json
+                output = str(resp_json)
+        except Exception:
+            # Fallback: treat as plain text
+            output = response.text.strip()
+
+        # Optionally remove the prompt from the start (if model echoes it)
         if output.lower().startswith(prompt.lower()):
             output = output[len(prompt):].strip()
         return output
     except requests.exceptions.RequestException as e:
-        return f"🔥 Error calling deployed model: {e}"
+        return {"error": f"🔥 Error calling deployed model: {e}"}
 
 def build_prompt(prompt: str, tone: str = None, structure: str = None):
     system_msg = "You are a helpful assistant that writes clear and engaging blog posts."

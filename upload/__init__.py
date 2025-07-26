@@ -1,6 +1,6 @@
 # azure_functions_app/upload/__init__.py
 import azure.functions as func
-from services.blob_storage import upload_file
+from services.blob_storage import upload_to_blob
 from scripts.preprocess_data import preprocess_to_instruction_format
 import os
 import tempfile
@@ -28,7 +28,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
             f.write(file.file.read())
 
         # Upload to blob storage
-        upload_file(temp_path, temp_filename)
+        upload_to_blob(temp_path, temp_filename)
 
         # Preprocess and convert to instruction format
         preprocess_to_instruction_format(temp_path)
