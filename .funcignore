@@ -18,3 +18,5 @@ score.py
 conda_env.yml
 *.pyo
 *.pyd
+ml_requirements.txt
+score.py

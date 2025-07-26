@@ -3,10 +3,19 @@ import json
 import logging
 from services.blob_storage import load_preferences_from_blob, save_preferences_to_blob
 
-app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
-@app.function_name(name="get_preferences")
-@app.route(route="preferences/{user_id}", methods=["GET"])
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    method = req.method
+    user_id = req.route_params.get("user_id")  # If your route is preferences/{user_id}
+
+    if method == "GET":
+        return get_preferences(req, user_id)
+    elif method == "POST":
+        return save_preferences(req, user_id)
+    else:
+        return func.HttpResponse("Method not allowed", status_code=405)
+
+
 def get_preferences(req: func.HttpRequest, user_id: str) -> func.HttpResponse:
     try:
         prefs = load_preferences_from_blob(user_id)
@@ -15,8 +24,6 @@ def get_preferences(req: func.HttpRequest, user_id: str) -> func.HttpResponse:
         logging.exception("Error getting preferences")
         return func.HttpResponse(f"Error: {str(e)}", status_code=500)
 
-@app.function_name(name="save_preferences")
-@app.route(route="preferences/{user_id}", methods=["POST"])
 def save_preferences(req: func.HttpRequest, user_id: str) -> func.HttpResponse:
     try:
         preferences = req.get_json()
