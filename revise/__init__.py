@@ -6,11 +6,7 @@ from services.openai_client import revise_blog_post
 from services.versioning import save_revision
 from services.blob_storage import load_preferences_from_blob
 
-app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
-
-@app.function_name(name="revise_post")
-@app.route(route="revise-post", methods=["POST"])
-def revise_post(req: func.HttpRequest) -> func.HttpResponse:
+def main(req: func.HttpRequest) -> func.HttpResponse:
     try:
         data = req.get_json()
         post_id = data.get("post_id")

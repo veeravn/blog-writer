@@ -6,11 +6,7 @@ from services.openai_client import generate_blog_post
 from services.cosmos_db import save_post
 from services.blob_storage import load_preferences_from_blob
 
-app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
-
-@app.function_name(name="blog_post")
-@app.route(route="blog-post", methods=["POST"])
-def blog_post(req: func.HttpRequest) -> func.HttpResponse:
+def main(req: func.HttpRequest) -> func.HttpResponse:
     try:
         data = req.get_json()
         prompt = data.get("prompt")

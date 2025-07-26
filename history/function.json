@@ -8,7 +8,7 @@
             "methods": [
                 "get"
             ],
-            "route": "{post_id}"
+            "route": "history/{post_id}"
         },
         {
             "type": "http",
