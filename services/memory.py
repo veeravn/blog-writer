@@ -1,33 +1,23 @@
-import tempfile
-import os, uuid
-from datetime import datetime
-from typing import List, Dict
-from .cosmos_db import save_prompt_history, fetch_user_preferences
+# services/memory.py
 
-def store_prompt_context(user_id: str, prompt: str, tone: str):
-    entry = {
-        "user_id": user_id,
-        "timestamp": datetime.utcnow().isoformat(),    
-        "prompt": prompt,
-        "preferred_tone": tone
-    }
-    save_prompt_history(entry)
+from services.blob_storage import save_json_to_blob, load_json_from_blob
 
-def get_user_tone_preferences(user_id: str) -> Dict:
-    return fetch_user_preferences(user_id)
+PREFERENCES_CONTAINER = "memory"
+PREFERENCES_BLOB_TEMPLATE = "{user_id}/preferences.json"
 
-def save_to_temp(file):
-    temp_dir = tempfile.gettempdir()
-    path = os.path.join(temp_dir, file.filename)
-    with open(path, "wb") as f:
-        f.write(file.file.read())
-    return path
+def get_preferences(user_id: str) -> dict:
+    """
+    Load the full preferences dictionary for a given user from blob storage.
+    Returns an empty dict if not found.
+    """
+    blob_path = PREFERENCES_BLOB_TEMPLATE.format(user_id=user_id)
+    return load_json_from_blob(PREFERENCES_CONTAINER, blob_path)
 
-def apply_preferences_to_prompt(prompt, preferences):
-    tone = preferences.get("tone", "")
-    structure = preferences.get("structure", "")
-    if tone:
-        prompt = f"[Tone: {tone}] {prompt}"
-    if structure:
-        prompt = f"[Structure: {structure}] {prompt}"
-    return prompt
+
+def save_preferences(user_id: str, prefs: dict):
+    """
+    Save the full preferences dictionary for a user to blob storage.
+    """
+    blob_path = PREFERENCES_BLOB_TEMPLATE.format(user_id=user_id)
+    save_json_to_blob(PREFERENCES_CONTAINER, blob_path, prefs)
+

@@ -1,6 +1,5 @@
 # services/model.py
 import os, requests
-import torch
 
 # Read the endpoint and key from env variables or fallback
 AZURE_ML_ENDPOINT = os.getenv("AZURE_ML_ENDPOINT", "https://partha-style-endpoint.eastus.inference.ml.azure.com/score")

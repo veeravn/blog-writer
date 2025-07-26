@@ -3,3 +3,5 @@ data/
 __pycache__/
 import_secrets.sh
 .env
+.python_packages
+.vscode

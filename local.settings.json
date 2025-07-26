@@ -1,0 +1,9 @@
+{
+    "IsEncrypted": false,
+    "Values": {
+        "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+        "FUNCTIONS_WORKER_RUNTIME": "python",
+        "AZURE_ML_ENDPOINT": "https://partha-style-endpoint.eastus.inference.ml.azure.com/score",
+        "AZURE_ML_API_KEY": "<your-local-api-key-here>"
+    }
+}

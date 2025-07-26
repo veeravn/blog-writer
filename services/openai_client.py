@@ -1,8 +1,5 @@
-import logging, openai, time, os
-from dotenv import load_dotenv
+import logging
 from .model import generate_with_model
-
-load_dotenv()
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

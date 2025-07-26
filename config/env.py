@@ -1,9 +1,7 @@
-from dotenv import load_dotenv
 from azure.identity import DefaultAzureCredential
 from azure.ai.ml import MLClient
 import os
 
-load_dotenv()
 def get_env_variable(var_name: str, default_value: str = None) -> str:
     """Retrieve an environment variable with a default value."""
     return os.getenv(var_name, default_value)
