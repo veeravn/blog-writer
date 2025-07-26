@@ -45,4 +45,5 @@ jobs:
           app-name: Blog-Writer
           package: '.'
           scm-do-build-during-deployment: true
+          remote-build: true
             
