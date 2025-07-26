@@ -12,14 +12,14 @@ on:
 
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
-  PYTHON_VERSION: '3.12' # set this to the python version to use (supports 3.6, 3.7, 3.8)
+  PYTHON_VERSION: '3.11' # set this to the python version to use (supports 3.6, 3.7, 3.8)
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      id-token: write
+      contents: read #This is required for actions/checkout
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -29,21 +29,45 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Create and start virtual environment
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Log in to Azure
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_B9DFA698F3B442588D5677CF7EBA651B }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_AA903C2EACB644CD833BAC9C22BA0756 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_1223823E05634DAE85104713563029AB }}
+      # Optional: Add step to run tests here
 
-      - name: Deploy Azure Function App using remote build
-        uses: azure/functions-action@v1
+      - name: Zip artifact for deployment
+        run: zip release.zip ./* -r
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
         with:
-          app-name: Blog-Writer
-          package: '.'
-          scm-do-build-during-deployment: true
-          remote-build: true
-            
+          name: python-app
+          path: |
+            release.zip
+            !venv/
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: python-app
+
+      - name: Unzip artifact for deployment
+        run: unzip release.zip     
+        
+      - name: 'Deploy to Azure Functions'
+        uses: Azure/functions-action@v1
+        id: deploy-to-function
+        with:
+          app-name: 'Blog-Writer'
+          slot-name: 'Production'
+          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_03F4076CFD0149CF9FEBB19130F50C18 }}
