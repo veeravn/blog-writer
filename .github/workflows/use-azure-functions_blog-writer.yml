@@ -32,12 +32,17 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_B9DFA698F3B442588D5677CF7EBA651B }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_AA903C2EACB644CD833BAC9C22BA0756 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_1223823E05634DAE85104713563029AB }}
+
       - name: Deploy Azure Function App using remote build
         uses: azure/functions-action@v1
         with:
           app-name: Blog-Writer
           package: '.'
-          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
           scm-do-build-during-deployment: true
-          enable-app-settings-validation: false
             
