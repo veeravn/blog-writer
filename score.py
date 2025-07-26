@@ -55,7 +55,7 @@ def run(input_data):
                 pad_token_id=tokenizer.eos_token_id
             )
         generated = tokenizer.decode(output[0], skip_special_tokens=True)
-        return json.dumps({"output": generated[len(prompt):].strip()})  # Return only the generated continuation
+        return {"output": generated[len(prompt):].strip()}  # Return only the generated continuation
 
     except Exception as e:
-        return f"🔥 Error during inference: {str(e)}"
+        return {"error": f"🔥 Error during inference: {str(e)}"}
