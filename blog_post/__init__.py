@@ -3,7 +3,8 @@ import json
 import logging
 from services.openai_client import generate_blog_post
 from services.memory import get_preferences
-from services.cosmos_db import get_post_by_id, save_post
+from services.cosmos_db import get_post_by_id
+from services.versioning import create_post_version
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     try:
@@ -40,8 +41,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         )
 
         # 4. Save the post
-        post_id = save_post(user_id=user_id, prompt=prompt, content=result.get("full_text", ""))
-        result["post_id"] = post_id
+        saved_post = create_post_version(user_id=user_id, prompt=prompt, content=result.get("full_text", ""))
+        result["post_id"] = saved_post["id"]
 
         # 5. Return clean result
         return func.HttpResponse(

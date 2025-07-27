@@ -3,7 +3,7 @@ import logging
 from azure.cosmos import CosmosClient, PartitionKey
 from datetime import datetime
 import config.env as env
-from typing import List
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -27,24 +27,30 @@ def save_post(user_id: str, prompt: str, content: str, tone: str = None, version
         "version": version,
         "timestamp": datetime.now().isoformat()
     }
+    save_post(item)
 
+def save_post(item: dict) -> str:
+    """Save a post dict to Cosmos DB."""
     container.create_item(body=item)
-    logger.info(f"Saved post {post_id} for user {user_id}")
-    return post_id
+    logger.info(f"Saved post {item['id']} for user {item.get('user_id')}")
+    return item["id"]
 
-def get_post_history(user_id: str, post_id: str):
+def get_post_history(user_id: str, prompt: str) -> List[dict]:
+    """Get all versions of a post by user_id and prompt (or post_id if you prefer)."""
     query = """
     SELECT * FROM c 
-    WHERE c.user_id = @user_id AND c.post_id = @post_id
+    WHERE c.user_id = @user_id AND c.prompt = @prompt
     ORDER BY c.version ASC
     """
     params = [
         {"name": "@user_id", "value": user_id},
-        {"name": "@post_id", "value": post_id}
+        {"name": "@prompt", "value": prompt}
     ]
+    return list(container.query_items(query=query, parameters=params, enable_cross_partition_query=True))
 
-def get_post_by_id(post_id: str) -> dict:
-    query = "SELECT * FROM Posts p WHERE p.id=@id"
+def get_post_by_id(post_id: str) -> Optional[dict]:
+    """Get a single post by its unique id."""
+    query = "SELECT * FROM c WHERE c.id=@id"
     params = [{"name": "@id", "value": post_id}]
     results = list(container.query_items(query=query, parameters=params, enable_cross_partition_query=True))
     return results[0] if results else None
