@@ -25,7 +25,7 @@ def save_post(user_id: str, prompt: str, content: str, tone: str = None, version
         "content": content,
         "tone": tone,
         "version": version,
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.now().isoformat()
     }
 
     container.create_item(body=item)
