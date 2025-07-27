@@ -4,17 +4,15 @@ from .model import generate_with_model
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-def generate_blog_post(prompt: str, style: str = None, preferences: dict = None) -> str:
+def generate_blog_post(prompt: str, style_description: str = None, preferences: dict = None) -> str:
     # System prompt injection
+    system_prompt = ""
     if preferences:
         tone = preferences.get("tone", "default")
         structure = preferences.get("structure", "blog")
-        system_prompt = f"Write with a {tone} tone and {structure} structure.\n"
-    elif style:
-        system_prompt = f"Write in the style of {style}.\n"
-    else:
-        system_prompt = ""
-
+        system_prompt += f"Write with a {tone} tone and {structure} structure.\n"
+    if style_description:
+        system_prompt += f"Emulate the following writing style: {style_description}\n"
     full_prompt = system_prompt + prompt
     return generate_with_model(full_prompt)
 
