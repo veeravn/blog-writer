@@ -12,6 +12,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         user_id = data.get("user_id")
         style_reference_post_id = data.get("style_reference_post_id")
         style_description = data.get("style_description")
+        structure = data.get("structure")
 
         # 1. Style: reference post takes priority, else style_description, else None
         style_text = None
@@ -31,14 +32,20 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 logging.warning(f"Could not load preferences for {user_id}: {e}")
 
         # 3. Generate blog post (do not precompose prompt, style, or preferences)
-        content = generate_blog_post(prompt=prompt, style=style_text, preferences=preferences)
+        result = generate_blog_post(
+            prompt=prompt,
+            style_description=style_text,
+            preferences=preferences,
+            structure=structure
+        )
 
         # 4. Save the post
-        post_id = save_post(user_id=user_id, prompt=prompt, content=content)
+        post_id = save_post(user_id=user_id, prompt=prompt, content=result.get("full_text", ""))
+        result["post_id"] = post_id
 
         # 5. Return clean result
         return func.HttpResponse(
-            json.dumps({"post_id": post_id, "content": content}),
+            json.dumps(result),
             mimetype="application/json",
             status_code=200
         )
