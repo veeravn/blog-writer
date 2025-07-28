@@ -3,7 +3,7 @@ import json
 import logging
 from services.openai_client import generate_blog_post
 from services.memory import get_preferences
-from services.cosmos_db import get_post_by_id
+from dao.cosmos_db import get_post_by_id
 from services.versioning import create_post_version
 
 def main(req: func.HttpRequest) -> func.HttpResponse:

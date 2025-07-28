@@ -1,5 +1,5 @@
 import azure.functions as func
-from services.blob_storage import upload_to_blob, append_to_blob_batch
+from dao.blob_storage import upload_to_blob, append_to_blob_batch
 from services.preprocess_data import preprocess_to_instruction_format
 import os
 import tempfile

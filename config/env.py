@@ -25,7 +25,13 @@ CONTAINER_NAME = "Posts"
 MODEL_NAME = get_env_variable("MODEL_NAME", "mistralai/Mistral-7B-v0.1")
 TRAINING_COMMAND = "python train_lora.py --dataset ${{inputs.dataset}} --output_dir ${{outputs.model_output}}"
 INSTRUCTION_DATASET_URI = f"azureml://subscriptions/{AZURE_SUBSCRIPTION_ID}/resourcegroups/{AZURE_RESOURCE_GROUP}/workspaces/{WORKSPACE_NAME}/datastores/workspaceblobstore/paths/instruction_dataset.jsonl"
+GMAIL_USER = os.getenv("GMAIL_USER")
+GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
 
+if not GMAIL_USER:
+    raise ValueError("Missing Gmail user in environment variables.")
+if not GMAIL_APP_PASSWORD:
+    raise ValueError("Missing Gmail app password in environment variables.")
 if not COSMOS_CONNECTION_STRING:
     raise ValueError("Missing Cosmos DB credentials in environment variables.")
 if not AZURE_STORAGE_CONNECTION_STRING:

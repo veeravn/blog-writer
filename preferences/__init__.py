@@ -1,7 +1,7 @@
 import azure.functions as func
 import json
 import logging
-from services.blob_storage import load_preferences_from_blob, save_preferences_to_blob
+from dao.blob_storage import load_preferences_from_blob, save_preferences_to_blob
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:

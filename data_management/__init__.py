@@ -1,5 +1,5 @@
 import azure.functions as func
-from services.blob_storage import delete_dataset
+from dao.blob_storage import delete_dataset
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     filename = req.route_params.get("filename")

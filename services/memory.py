@@ -1,6 +1,6 @@
 # services/memory.py
 
-from services.blob_storage import save_json_to_blob, load_json_from_blob
+from dao.blob_storage import save_json_to_blob, load_json_from_blob
 
 PREFERENCES_CONTAINER = "memory"
 PREFERENCES_BLOB_TEMPLATE = "{user_id}/preferences.json"

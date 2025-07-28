@@ -1,7 +1,7 @@
 import azure.functions as func
 import logging
 import json
-from services.cosmos_db import get_post_history
+from dao.cosmos_db import get_post_history
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     post_id = req.route_params.get("post_id")
