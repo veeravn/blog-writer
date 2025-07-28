@@ -1,6 +1,6 @@
 import azure.functions as func
 import json
-from services.cosmos_db import get_post_version_content
+from dao.cosmos_db import get_post_version_content
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     post_id = req.route_params.get("post_id")

@@ -1,35 +1,59 @@
-from services.blob_storage import archive_and_clear_new_data
+import logging
+import os
+from .blob_storage import (
+    download_blob,
+    upload_to_blob,
+    archive_and_clear_new_data
+)
 from .preprocess_data import preprocess_to_instruction_format
 from .submit_train_job import submit_azureml_job
+from utils.email_utils import send_email
 
-RAW_DATA_FILE = "data/new_feedback.jsonl"
-PROCESSED_FILE = "data/preprocessed.jsonl"
-FINE_TUNE_THRESHOLD = 20  # Adjust as needed
-
-def count_lines(filepath):
-    with open(filepath, 'r', encoding='utf-8') as f:
-        return sum(1 for _ in f if f.strip())
-
-def should_fine_tune():
-    return count_lines(RAW_DATA_FILE) >= FINE_TUNE_THRESHOLD
+PENDING_BLOB = "new_data.jsonl"
+COMBINED_BLOB = "instruction_dataset.jsonl"
+ARCHIVE_PREFIX = "archive/"
+BATCH_SIZE = 10   # You can adjust this threshold
 
 def continuous_finetune():
-    if not should_fine_tune():
-        print("Not enough new feedback to trigger fine-tuning.")
+    logging.info("Continuous fine-tune started.")
+
+    # Download new training data (if any)
+    new_data_path = "/tmp/" + PENDING_BLOB
+    combined_data_path = "/tmp/" + COMBINED_BLOB
+
+    download_blob(PENDING_BLOB, new_data_path)
+    download_blob(COMBINED_BLOB, combined_data_path)
+
+    # Check if new data is sufficient to trigger fine-tuning
+    with open(new_data_path, "r", encoding="utf-8") as f:
+        new_lines = [line.strip() for line in f if line.strip()]
+    if len(new_lines) < BATCH_SIZE:
+        logging.info(f"Not enough new data ({len(new_lines)} < {BATCH_SIZE}), skipping fine-tune.")
         return
 
-    print("Preprocessing new feedback for fine-tuning...")
-    preprocess_to_instruction_format(RAW_DATA_FILE, PROCESSED_FILE)
+    # Merge new data into main dataset
+    with open(combined_data_path, "a", encoding="utf-8") as f:
+        for line in new_lines:
+            f.write(line + "\n")
+    upload_to_blob(combined_data_path, COMBINED_BLOB)
 
-    print("Submitting Azure ML fine-tuning job...")
-    # submit_azureml_job should pick up the correct dataset path if configured to do so,
-    # or modify it to accept a file argument if needed
-    success = submit_azureml_job()
+    # Preprocess data and launch training job
+    preprocess_to_instruction_format(combined_data_path, combined_data_path)  # Overwrite as needed
+    logging.info("Preprocessing completed. Submitting AzureML training job.")
+    submit_azureml_job()
+    logging.info("Fine-tune job completed.")
 
-    if success:
-        archive_and_clear_new_data()
-    else:
-        print("Fine-tune failed. Not archiving or clearing batch file.")
+    # Archive the processed new_data
+    archive_and_clear_new_data()
+
+    # Send notification email (implement email_utils.send_email)
+    send_email(
+        subject="AI Blog Writer - Fine-tune Complete",
+        message=f"Continuous fine-tune job completed and model is updating."
+    )
+    logging.info("Notification sent.")
+
+    logging.info("Continuous fine-tune finished.")
 
 if __name__ == "__main__":
     continuous_finetune()

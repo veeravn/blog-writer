@@ -4,7 +4,7 @@ import logging
 
 from services.openai_client import revise_blog_post
 from services.versioning import revise_post_version
-from services.blob_storage import load_preferences_from_blob
+from dao.blob_storage import load_preferences_from_blob
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     try:
