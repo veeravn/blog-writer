@@ -1,4 +1,5 @@
 # services/blob_storage.pyimport json
+from datetime import datetime, time
 from azure.storage.blob import BlobServiceClient, ContentSettings
 import config.env as env
 import json
@@ -7,6 +8,7 @@ blob_service_client = BlobServiceClient.from_connection_string(env.AZURE_STORAGE
 container_name = env.BLOB_CONTAINER_NAME
 container_client = blob_service_client.get_container_client("blogdata")
 PREFERENCES_PREFIX = "preferences/"
+BATCH_BLOB_NAME = "new_data.jsonl"
 
 
 def upload_to_blob(container_name: str, blob_path: str, data: bytes, content_type: str = "application/octet-stream"):
@@ -69,3 +71,50 @@ def save_preferences_to_blob(user_id: str, preferences: dict):
     blob_name = f"{PREFERENCES_PREFIX}{user_id}.json"
     blob_client = container_client.get_blob_client(blob_name)
     blob_client.upload_blob(json.dumps(preferences), overwrite=True)
+
+def append_to_blob_batch(preprocessed_file_path):
+    # Download existing batch file (if any)
+    batch_blob = container_client.get_blob_client(BATCH_BLOB_NAME)
+    batch_data = b""
+    try:
+        batch_data = batch_blob.download_blob().readall()
+    except Exception:
+        pass  # File may not exist yet
+
+    # Read new data to append
+    with open(preprocessed_file_path, "rb") as f:
+        new_data = f.read()
+
+    # Combine and upload
+    combined = batch_data + new_data
+    upload_to_blob(container_name, BATCH_BLOB_NAME, combined)
+
+def archive_and_clear_new_data(
+    batch_blob_name: str = "new_data.jsonl",
+    archive_dir: str = "processed"
+):
+    """
+    Archives the processed new_data.jsonl and clears it for the next batch.
+    """
+
+    # Source blob (batch file)
+    batch_blob = container_client.get_blob_client(batch_blob_name)
+
+    # Archive location with timestamp
+    timestamp = datetime.now(datetime.timezone.utc).strftime("%Y%m%d-%H%M%S")
+    archive_blob_name = f"{archive_dir}/new_data-{timestamp}.jsonl"
+    archive_blob = container_client.get_blob_client(archive_blob_name)
+
+    # Start copy (async, but we can check status if needed)
+    copy = archive_blob.start_copy_from_url(batch_blob.url)
+    print(f"Archiving {batch_blob_name} to {archive_blob_name} ...")
+    
+    # Wait for copy completion (optional, usually quick for small files)
+    while archive_blob.get_blob_properties().copy.status == "pending":
+        time.sleep(0.5)
+    
+    print("Archive complete. Clearing the batch file.")
+
+    # Overwrite the source blob with empty content to clear it
+    batch_blob.upload_blob(b"", overwrite=True)
+    print("Batch file cleared and ready for next batch.")

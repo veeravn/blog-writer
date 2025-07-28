@@ -25,7 +25,7 @@ def save_post(user_id: str, prompt: str, content: str, tone: str = None, version
         "content": content,
         "tone": tone,
         "version": version,
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now(datetime.timezone.utc).isoformat()
     }
     save_post(item)
 
@@ -62,3 +62,20 @@ def query_posts_by_ids(ids: List[str]) -> List[dict]:
     formatted_ids = ",".join(f"'{id}'" for id in ids)
     query = f"SELECT * FROM Posts p WHERE p.id IN ({formatted_ids})"
     return list(container.query_items(query=query, enable_cross_partition_query=True))
+
+def get_new_training_examples(batch_size=50):
+    query = f"SELECT * FROM Posts p WHERE NOT IS_DEFINED(p.used_for_finetune) OR p.used_for_finetune = false OFFSET 0 LIMIT {batch_size}"
+    results = list(container.query_items(query=query, enable_cross_partition_query=True))
+    return results
+
+def mark_examples_as_processed(ids):
+    for post_id in ids:
+        items = list(container.query_items(
+            query="SELECT * FROM Posts p WHERE p.id=@id",
+            parameters=[{"name": "@id", "value": post_id}],
+            enable_cross_partition_query=True
+        ))
+        if items:
+            item = items[0]
+            item["used_for_finetune"] = True
+            container.replace_item(item=item["id"], body=item)

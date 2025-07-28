@@ -1,11 +1,8 @@
 from azure.ai.ml.entities import ManagedOnlineEndpoint, ManagedOnlineDeployment, CodeConfiguration, OnlineRequestSettings
 from azure.core.exceptions import ResourceExistsError
 
-from dotenv import load_dotenv
 from config.env import ml_client, ENVIRONMENT_NAME, ENVIRONMENT_VERSION, MODEL_VERSION, FT_MODEL_NAME
 from scripts.secrets_loader import get_env_vars
-
-load_dotenv()
 
 def submit_mlendpoint_job():
     azureml_env = ml_client.environments.get(ENVIRONMENT_NAME, version=ENVIRONMENT_VERSION)
