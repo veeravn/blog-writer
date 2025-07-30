@@ -1,6 +1,6 @@
 import logging
 import os
-from .blob_storage import (
+from dao.blob_storage import (
     download_blob,
     upload_to_blob,
     archive_and_clear_new_data
