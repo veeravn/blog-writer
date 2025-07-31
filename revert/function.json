@@ -5,7 +5,7 @@
             "type": "httpTrigger",
             "direction": "in",
             "name": "req",
-            "route": "/blog-post/{post_id}/revert",
+            "route": "blog-post/{post_id}/revert",
             "methods": [
                 "post"
             ]
