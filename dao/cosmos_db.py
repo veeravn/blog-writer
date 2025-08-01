@@ -35,18 +35,28 @@ def save_post(item: dict) -> str:
     logger.info(f"Saved post {item['id']} for user {item.get('user_id')}")
     return item["id"]
 
-def get_post_history(user_id: str, prompt: str) -> List[dict]:
-    """Get all versions of a post by user_id and prompt (or post_id if you prefer)."""
-    query = """
-    SELECT * FROM c 
-    WHERE c.user_id = @user_id AND c.prompt = @prompt
-    ORDER BY c.version ASC
-    """
+def get_all_posts_by_user(user_id: str):
+    query = "SELECT * FROM c WHERE c.user_id = @user_id"
+    params = [{"name": "@user_id", "value": user_id}]
+    results = list(container.query_items(
+        query=query, parameters=params, enable_cross_partition_query=True
+    ))
+    # Optionally sort or process results here
+    return results
+
+def get_post_history_by_id(user_id: str, post_id: str):
+    query = (
+        "SELECT * FROM c WHERE c.user_id = @user_id AND c.id = @post_id"
+        " ORDER BY c.version ASC"
+    )
     params = [
         {"name": "@user_id", "value": user_id},
-        {"name": "@prompt", "value": prompt}
+        {"name": "@post_id", "value": post_id}
     ]
-    return list(container.query_items(query=query, parameters=params, enable_cross_partition_query=True))
+    results = list(container.query_items(
+        query=query, parameters=params, enable_cross_partition_query=True
+    ))
+    return results
 
 def get_post_by_id(post_id: str) -> Optional[dict]:
     """Get a single post by its unique id."""

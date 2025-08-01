@@ -1,14 +1,14 @@
 {
     "bindings": [
         {
-            "authLevel": "anonymous",
+            "authLevel": "function",
             "type": "httpTrigger",
             "direction": "in",
             "name": "req",
             "methods": [
                 "get"
             ],
-            "route": "history/{post_id}"
+            "route": "history/{user_id}/{post_id?}"
         },
         {
             "type": "http",
