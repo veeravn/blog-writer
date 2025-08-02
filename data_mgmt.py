@@ -6,7 +6,7 @@ from dao.blob_storage import list_blob_files  # You must implement this helper
 # Set up Function App
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
-@app.route(route="data-management/list", methods=["GET"])
+@app.route(route="data-mgmt/list", methods=["GET"])
 def list_all_files(req: func.HttpRequest) -> func.HttpResponse:
     """
     List all files in the datasets and batch containers.
@@ -26,7 +26,7 @@ def list_all_files(req: func.HttpRequest) -> func.HttpResponse:
             json.dumps({"error": str(e)}), status_code=500, mimetype="application/json"
         )
 
-@app.route(route="data-management/batch", methods=["GET"])
+@app.route(route="data-mgmt/batch", methods=["GET"])
 def list_batch_files(req: func.HttpRequest) -> func.HttpResponse:
     """
     List all batch files (e.g., new_data.jsonl, archived batches) in the 'batch' container.
