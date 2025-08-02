@@ -4,7 +4,7 @@ import json
 from dao.blob_storage import list_blob_files  # You must implement this helper
 
 # Set up Function App
-app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
+app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 @app.route(route="data-mgmt/list", methods=["GET"])
 def list_all_files(req: func.HttpRequest) -> func.HttpResponse:
