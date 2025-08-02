@@ -1,10 +1,45 @@
 import azure.functions as func
-from dao.blob_storage import delete_dataset
+import logging
+import json
+from dao.blob_storage import list_blob_files  # You must implement this helper
 
-def main(req: func.HttpRequest) -> func.HttpResponse:
-    filename = req.route_params.get("filename")
+# Set up Function App
+app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
+
+@app.route(route="data-management/list", methods=["GET"])
+def list_all_files(req: func.HttpRequest) -> func.HttpResponse:
+    """
+    List all files in the datasets and batch containers.
+    You can add ?container=datasets or ?container=batch to filter.
+    """
     try:
-        delete_dataset(filename)
-        return func.HttpResponse(f"Deleted {filename}", status_code=200)
+        container = req.params.get("container", "datasets")  # default to 'datasets'
+        files = list_blob_files(container)
+        return func.HttpResponse(
+            json.dumps({"files": files}),
+            mimetype="application/json",
+            status_code=200,
+        )
     except Exception as e:
-        return func.HttpResponse(f"Error deleting file: {str(e)}", status_code=500)
+        logging.exception("Error listing files")
+        return func.HttpResponse(
+            json.dumps({"error": str(e)}), status_code=500, mimetype="application/json"
+        )
+
+@app.route(route="data-management/batch", methods=["GET"])
+def list_batch_files(req: func.HttpRequest) -> func.HttpResponse:
+    """
+    List all batch files (e.g., new_data.jsonl, archived batches) in the 'batch' container.
+    """
+    try:
+        files = list_blob_files("batch")
+        return func.HttpResponse(
+            json.dumps({"files": files}),
+            mimetype="application/json",
+            status_code=200,
+        )
+    except Exception as e:
+        logging.exception("Error listing batch files")
+        return func.HttpResponse(
+            json.dumps({"error": str(e)}), status_code=500, mimetype="application/json"
+        )
