@@ -6,7 +6,7 @@ import json
 
 blob_service_client = BlobServiceClient.from_connection_string(env.AZURE_STORAGE_CONNECTION_STRING)
 container_name = env.BLOB_CONTAINER_NAME
-container_client = blob_service_client.get_container_client("blogdata")
+blog_container_client = blob_service_client.get_container_client("blogdata")
 PREFERENCES_PREFIX = "preferences/"
 BATCH_BLOB_NAME = "new_data.jsonl"
 
@@ -15,6 +15,7 @@ def upload_to_blob(container_name: str, blob_path: str, data: bytes, content_typ
     """
     Uploads raw bytes data to blob storage.
     """
+    container_client = blob_service_client.get_container_client(container_name)
     container_client.upload_blob(
         name=blob_path,
         data=data,
@@ -22,6 +23,12 @@ def upload_to_blob(container_name: str, blob_path: str, data: bytes, content_typ
         content_settings=ContentSettings(content_type=content_type)
     )
 
+def upload_file_to_blob(container_name: str, blob_path: str, file_path: str):
+    """
+    Uploads a file to blob storage.
+    """
+    with open(file_path, "rb") as file_data:
+        upload_to_blob(container_name, blob_path, file_data.read(), content_type="application/octet-stream")
 
 def download_blob(container_name: str, blob_path: str) -> bytes:
     """
@@ -35,7 +42,8 @@ def delete_dataset(filename: str):
     """
     Deletes a dataset blob from the 'datasets' container.
     """
-    blob_service_client.delete_blob("datasets", filename)
+    dataset_client = blob_service_client.get_container_client("datasets")
+    dataset_client.delete_blob(filename)
 
 
 def save_json_to_blob(container_name: str, blob_path: str, obj: dict):
@@ -59,7 +67,7 @@ def load_json_from_blob(container_name: str, blob_path: str) -> dict:
 def load_preferences_from_blob(user_id: str) -> dict:
     blob_name = f"{PREFERENCES_PREFIX}{user_id}.json"
     try:
-        blob_client = container_client.get_blob_client(blob_name)
+        blob_client = blog_container_client.get_blob_client(blob_name)
         content = blob_client.download_blob().readall()
         return json.loads(content)
     except Exception:
@@ -69,12 +77,12 @@ def load_preferences_from_blob(user_id: str) -> dict:
 
 def save_preferences_to_blob(user_id: str, preferences: dict):
     blob_name = f"{PREFERENCES_PREFIX}{user_id}.json"
-    blob_client = container_client.get_blob_client(blob_name)
+    blob_client = blog_container_client.get_blob_client(blob_name)
     blob_client.upload_blob(json.dumps(preferences), overwrite=True)
 
 def append_to_blob_batch(preprocessed_file_path):
     # Download existing batch file (if any)
-    batch_blob = container_client.get_blob_client(BATCH_BLOB_NAME)
+    batch_blob = blog_container_client.get_blob_client(BATCH_BLOB_NAME)
     batch_data = b""
     try:
         batch_data = batch_blob.download_blob().readall()
@@ -87,7 +95,7 @@ def append_to_blob_batch(preprocessed_file_path):
 
     # Combine and upload
     combined = batch_data + new_data
-    upload_to_blob(container_name, BATCH_BLOB_NAME, combined)
+    upload_to_blob(container_name, BATCH_BLOB_NAME, combined, content_type="application/jsonl")
 
 def archive_and_clear_new_data(
     batch_blob_name: str = "new_data.jsonl",
@@ -98,12 +106,12 @@ def archive_and_clear_new_data(
     """
 
     # Source blob (batch file)
-    batch_blob = container_client.get_blob_client(batch_blob_name)
+    batch_blob = blog_container_client.get_blob_client(batch_blob_name)
 
     # Archive location with timestamp
     timestamp = datetime.now(datetime.timezone.utc).strftime("%Y%m%d-%H%M%S")
     archive_blob_name = f"{archive_dir}/new_data-{timestamp}.jsonl"
-    archive_blob = container_client.get_blob_client(archive_blob_name)
+    archive_blob = blog_container_client.get_blob_client(archive_blob_name)
 
     # Start copy (async, but we can check status if needed)
     copy = archive_blob.start_copy_from_url(batch_blob.url)

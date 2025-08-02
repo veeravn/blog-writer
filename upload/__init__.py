@@ -1,5 +1,5 @@
 import azure.functions as func
-from dao.blob_storage import upload_to_blob, append_to_blob_batch
+from dao.blob_storage import upload_file_to_blob, append_to_blob_batch
 from services.preprocess_data import preprocess_to_instruction_format
 import os
 import tempfile
@@ -20,17 +20,18 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
 
         # Save uploaded file to a temporary location
         temp_dir = tempfile.gettempdir()
-        temp_filename = f"{uuid.uuid4()}-{file.filename}"
+        file_id = uuid.uuid4()
+        temp_filename = f"{file_id}-{file.filename}"
         temp_path = os.path.join(temp_dir, temp_filename)
 
         with open(temp_path, "wb") as f:
             f.write(file.file.read())
 
         # Optional: Upload the raw file to blob storage for audit/logs
-        upload_to_blob(temp_path, temp_filename)
+        upload_file_to_blob(container_name="datasets", blob_path=file.filename, file_path=temp_path)
 
         # Preprocess to another temp file (in instruction format)
-        instruction_file = os.path.join(temp_dir, f"processed-{uuid.uuid4()}.jsonl")
+        instruction_file = os.path.join(temp_dir, f"processed-{file_id}.jsonl")
         preprocess_to_instruction_format(temp_path, instruction_file)
 
         # Append the processed file to the batch blob (new_data.jsonl)
