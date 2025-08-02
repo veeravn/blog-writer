@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import uuid4
 from typing import Optional, List
-from dao.cosmos_db import get_post_by_id, save_post, query_posts_by_ids, get_post_history
+from dao.cosmos_db import get_post_by_id, save_post, query_posts_by_ids
 
 def create_post_version(
     user_id: str,
