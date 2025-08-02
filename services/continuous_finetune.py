@@ -12,6 +12,7 @@ from utils.email_utils import send_email
 PENDING_BLOB = "new_data.jsonl"
 COMBINED_BLOB = "instruction_dataset.jsonl"
 ARCHIVE_PREFIX = "archive/"
+DATASETS_CONTAINER = "datasets"
 BATCH_SIZE = 10   # You can adjust this threshold
 
 def continuous_finetune():
@@ -21,8 +22,8 @@ def continuous_finetune():
     new_data_path = "/tmp/" + PENDING_BLOB
     combined_data_path = "/tmp/" + COMBINED_BLOB
 
-    download_blob(PENDING_BLOB, new_data_path)
-    download_blob(COMBINED_BLOB, combined_data_path)
+    download_blob(DATASETS_CONTAINER, new_data_path)
+    download_blob(DATASETS_CONTAINER, combined_data_path)
 
     # Check if new data is sufficient to trigger fine-tuning
     with open(new_data_path, "r", encoding="utf-8") as f:
@@ -35,7 +36,7 @@ def continuous_finetune():
     with open(combined_data_path, "a", encoding="utf-8") as f:
         for line in new_lines:
             f.write(line + "\n")
-    upload_to_blob(combined_data_path, COMBINED_BLOB)
+    upload_to_blob(container_name=DATASETS_CONTAINER, blob_path=COMBINED_BLOB, data=open(combined_data_path, "rb").read(), content_type="application/jsonl")
 
     # Preprocess data and launch training job
     preprocess_to_instruction_format(combined_data_path, combined_data_path)  # Overwrite as needed
