@@ -240,3 +240,17 @@ def finetune_trigger(mytimer: func.TimerRequest) -> None:
         logging.info("Continuous fine-tune completed successfully.")
     except Exception as e:
         logging.error(f"Error in fine-tune job: {e}")
+
+# Serve the OpenAPI JSON spec
+@app.route(route="swagger.json", methods=["GET"])
+def serve_openapi_spec(req: func.HttpRequest) -> func.HttpResponse:
+    openapi_path = os.path.join(os.path.dirname(__file__), "openapi.json")
+    with open(openapi_path, "r") as f:
+        spec = json.load(f)
+    return func.HttpResponse(json.dumps(spec), mimetype="application/json")
+
+@app.route(route="docs", methods=["GET"])
+def swagger_ui(req: func.HttpRequest) -> func.HttpResponse:
+    swagger_path = os.path.join(os.path.dirname(__file__), "swagger_ui.html")
+    with open(swagger_path, "r") as f:
+        return func.HttpResponse(f.read(), mimetype="text/html")

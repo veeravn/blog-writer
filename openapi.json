@@ -1,0 +1,186 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Blog Writer API",
+        "version": "1.0.0",
+        "description": "API for generating, revising, managing, and storing blog content."
+    },
+    "paths": {
+        "/api/blog-post": {
+            "post": {
+                "summary": "Generate a new blog post",
+                "responses": {
+                    "200": {
+                        "description": "Successfully generated a blog post"
+                    }
+                }
+            }
+        },
+        "/api/compare/{post_id}": {
+            "get": {
+                "summary": "Compare blog post versions",
+                "parameters": [
+                    {
+                        "name": "post_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Comparison completed"
+                    }
+                }
+            }
+        },
+        "/api/posts/{user_id}": {
+            "get": {
+                "summary": "Get all posts for a user",
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User post history retrieved"
+                    }
+                }
+            }
+        },
+        "/api/data-mgmt/list": {
+            "get": {
+                "summary": "List all uploaded files in datasets container",
+                "responses": {
+                    "200": {
+                        "description": "File list retrieved"
+                    }
+                }
+            }
+        },
+        "/api/data-mgmt/batch": {
+            "get": {
+                "summary": "List all batch files",
+                "responses": {
+                    "200": {
+                        "description": "Batch file list retrieved"
+                    }
+                }
+            }
+        },
+        "/api/ping": {
+            "get": {
+                "summary": "Ping the API",
+                "responses": {
+                    "200": {
+                        "description": "Ping successful"
+                    }
+                }
+            }
+        },
+        "/api/posts/{user_id}/{post_id}": {
+            "get": {
+                "summary": "Get history for a specific blog post",
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "post_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Post history retrieved"
+                    }
+                }
+            }
+        },
+        "/api/preferences/{user_id}": {
+            "get": {
+                "summary": "Get preferences for a user",
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Preferences retrieved"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Update preferences for a user",
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Preferences updated"
+                    }
+                }
+            }
+        },
+        "/api/revert": {
+            "post": {
+                "summary": "Revert blog post to previous version",
+                "responses": {
+                    "200": {
+                        "description": "Post reverted"
+                    }
+                }
+            }
+        },
+        "/api/revise_post": {
+            "post": {
+                "summary": "Revise an existing blog post",
+                "responses": {
+                    "200": {
+                        "description": "Post revised"
+                    }
+                }
+            }
+        },
+        "/api/upload": {
+            "post": {
+                "summary": "Upload user data file",
+                "responses": {
+                    "200": {
+                        "description": "File uploaded"
+                    }
+                }
+            }
+        }
+    }
+}
