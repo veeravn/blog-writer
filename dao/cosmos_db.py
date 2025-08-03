@@ -65,6 +65,21 @@ def get_post_by_id(post_id: str) -> Optional[dict]:
     results = list(container.query_items(query=query, parameters=params, enable_cross_partition_query=True))
     return results[0] if results else None
 
+def get_post_version_content(post_id: str, version: int) -> dict:
+    """
+    Fetches the post content for a specific post_id and version.
+    """
+    query = """
+        SELECT * FROM Posts p 
+        WHERE p.id = @post_id AND p.version = @version
+    """
+    params = [
+        {"name": "@post_id", "value": post_id},
+        {"name": "@version", "value": version},
+    ]
+    items = list(container.query_items(query=query, parameters=params, enable_cross_partition_query=True))
+    return items[0] if items else None
+
 def query_posts_by_ids(ids: List[str]) -> List[dict]:
     if not ids:
         return []

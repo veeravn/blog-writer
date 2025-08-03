@@ -19,6 +19,10 @@ from services.continuous_finetune import continuous_finetune
 # Set up Function App
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
+@app.route(route="ping", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET"])
+def ping(req: func.HttpRequest) -> func.HttpResponse:
+    return func.HttpResponse("pong")
+
 @app.route(route="data-mgmt/list", methods=["GET"])
 def list_all_files(req: func.HttpRequest) -> func.HttpResponse:
     """
@@ -87,7 +91,6 @@ def generate_post(req: func.HttpRequest) -> func.HttpResponse:
         logging.exception("Error generating post")
         return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500)
     
-@app.route(route="posts/{user_id}", methods=["GET"])
 @app.route(route="posts/{user_id}/{post_id}", methods=["GET"])
 def post_history(req: func.HttpRequest) -> func.HttpResponse:
     user_id = req.route_params.get("user_id")
@@ -103,6 +106,19 @@ def post_history(req: func.HttpRequest) -> func.HttpResponse:
 
     except Exception as e:
         return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500)
+
+@app.route(route="posts/{user_id}", methods=["GET"])
+def get_all_posts_by_user(req: func.HttpRequest):
+    """
+    Fetch all posts for a given user_id.
+    """
+    user_id = req.route_params.get("user_id")
+    try:
+        posts = get_all_posts_by_user(user_id)
+        return posts
+    except Exception as e:
+        logging.error(f"Error fetching posts for user {user_id}: {e}")
+        raise
 
 @app.function_name(name="preferences")
 @app.route(route="preferences/{user_id}", methods=["GET", "POST"])
