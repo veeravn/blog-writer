@@ -103,7 +103,7 @@ def post_history(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500)
 
 @app.route(route="posts/{user_id}", methods=["GET"])
-def get_all_posts_by_user(req: func.HttpRequest) -> func.HttpResponse:
+def get_all_user_posts(req: func.HttpRequest) -> func.HttpResponse:
     """
     Fetch all posts for a given user_id.
     """
