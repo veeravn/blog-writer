@@ -14,6 +14,7 @@ from services.versioning import (
 )
 from dao.cosmos_db import get_post_by_id, get_post_version_content, get_all_posts_by_user, get_post_history_by_id
 from services.memory import get_preferences
+from services.continuous_finetune import continuous_finetune
 
 # Set up Function App
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
@@ -213,3 +214,13 @@ def revise_post(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         logging.exception("Failed to revise post")
         return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500)
+    
+@app.schedule(schedule="0 0 2 * * SUN", arg_name="mytimer", run_on_startup=False, use_monitor=True)
+def finetune_trigger(mytimer: func.TimerRequest) -> None:
+    logging.info("Scheduled job running...")
+    logging.info("Timer triggered continuous fine-tune job")
+    try:
+        continuous_finetune()
+        logging.info("Continuous fine-tune completed successfully.")
+    except Exception as e:
+        logging.error(f"Error in fine-tune job: {e}")
