@@ -97,28 +97,22 @@ def post_history(req: func.HttpRequest) -> func.HttpResponse:
     post_id = req.route_params.get("post_id")
 
     try:
-        if post_id:
-            history = get_post_history_by_id(user_id, post_id)
-            return func.HttpResponse(json.dumps({"history": history}), mimetype="application/json", status_code=200)
-        else:
-            posts = get_all_posts_by_user(user_id)
-            return func.HttpResponse(json.dumps({"posts": posts}), mimetype="application/json", status_code=200)
-
+        history = get_post_history_by_id(user_id, post_id)
+        return func.HttpResponse(json.dumps({"history": history}), mimetype="application/json", status_code=200)
     except Exception as e:
         return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500)
 
 @app.route(route="posts/{user_id}", methods=["GET"])
-def get_all_posts_by_user(req: func.HttpRequest):
+def get_all_posts_by_user(req: func.HttpRequest) -> func.HttpResponse:
     """
     Fetch all posts for a given user_id.
     """
     user_id = req.route_params.get("user_id")
     try:
         posts = get_all_posts_by_user(user_id)
-        return posts
+        return func.HttpResponse(json.dumps({"posts": posts}), mimetype="application/json", status_code=200)
     except Exception as e:
-        logging.error(f"Error fetching posts for user {user_id}: {e}")
-        raise
+        return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500)
 
 @app.function_name(name="preferences")
 @app.route(route="preferences/{user_id}", methods=["GET", "POST"])
