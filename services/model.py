@@ -15,12 +15,7 @@ DEPLOYMENT = "gpt-4.1"
 def generate_with_model(prompt: str, temperature: float = 0.7, max_tokens: int = 300) -> str:
     if not AZURE_ML_API_KEY:
         raise ValueError("AZURE_ML_API_KEY not set in environment.")
-
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {AZURE_ML_API_KEY}"
-    }
-
+    
     client = AzureOpenAI(
         api_version="2025-01-01-preview",
         azure_endpoint=AZURE_ML_ENDPOINT,
@@ -28,9 +23,6 @@ def generate_with_model(prompt: str, temperature: float = 0.7, max_tokens: int =
     )
 
     payload = build_prompt(prompt, "neutral")
-
-    logging.info(f"Calling Azure ML endpoint: {AZURE_ML_ENDPOINT}")
-    logging.info(f"Payload: {json.dumps(payload, indent=2)}")
 
     try:
         response = client.chat.completions.create(
