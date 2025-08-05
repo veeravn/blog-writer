@@ -25,13 +25,15 @@ def generate_with_model(prompt: str, temperature: float = 0.7, max_tokens: int =
         "temperature": temperature
     }
 
+    logging.info(f"Calling Azure ML endpoint: {AZURE_ML_ENDPOINT}")
+    logging.info(f"Payload: {payload}")
+
     try:
         response = requests.post(AZURE_ML_ENDPOINT, headers=headers, json=payload)
         response.raise_for_status()
         # Attempt to parse JSON
         try:
             resp_json = response.json()
-            # Azure ML may return {"output": "..."} or {"outputs": "..."}
             if "output" in resp_json:
                 output = resp_json["output"]
             elif "outputs" in resp_json:
