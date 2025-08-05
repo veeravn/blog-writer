@@ -64,6 +64,18 @@ def list_batch_files(req: func.HttpRequest) -> func.HttpResponse:
 @app.function_name(name="blog_post")   
 @app.route(route="blog-post", methods=["POST"])
 def generate_post(req: func.HttpRequest) -> func.HttpResponse:
+    """Generate a blog post based on the prompt and optional style/preferences.
+    {
+        "prompt": "write a blog post about generative ai",
+        "style_description": "",
+        "style_reference_post_id": "",
+        "structure": {
+            "include_title": true,
+            "include_headers": true,
+            "sections": ["Introduction", "Opportunities", "Challenges", "Conclusion"]
+        }   
+    }
+    """
     try:
         data = req.get_json()
         prompt = data.get("prompt", "").strip()
