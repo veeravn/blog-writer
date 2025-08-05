@@ -57,5 +57,5 @@ def build_prompt(prompt: str, tone: str = None, structure: str = None):
         structure = structure or "paragraph form"
         system_msg += f" Write with a {tone} tone and {structure} structure."
 
-    formatted_prompt = f"{system_msg}\nUser: {prompt}\nAssistant:"
+    formatted_prompt = f"{prompt}"
     return formatted_prompt
